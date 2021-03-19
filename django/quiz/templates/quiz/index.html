@@ -5,29 +5,57 @@
         <title>Quiz</title>
         <meta charset="utf-8">
         <link rel="stylesheet" href="{% static 'css/quiz.css' %}">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+        <script>
+            // the selector will match all input controls of type :checkbox
+            // and attach a click event handler 
+            $("input:radio").on('click', function() {
+            // in the handler, 'this' refers to the box clicked on
+            var $box = $(this);
+            if ($box.is(":checked")) {
+                // the name of the box is retrieved using the .attr() method
+                // as it is assumed and expected to be immutable
+                var group = "input:checkbox[name='" + $box.attr("name") + "']";
+                // the checked state of the group/box on the other hand will change
+                // and the current value is retrieved using .prop() method
+                $(group).prop("checked", false);
+                $box.prop("checked", true);
+            } else {
+                $box.prop("checked", false);
+            }
+            });
+        </script>
     </head>
     <body>
         <div id="wrapper">
             <header>
-                <h1>Quiz</h1>
+                <a href="/"><h1>Quiz</h1></a>
             </header>
             <main>
-                <form method="POST">
+                <form action="/evaluate/" method="POST">
+                {% csrf_token %}
                 {% for question in questions %}
                     <div class="question">
                         <h2>{{ question.question_content }}</h2>
-                        <input type="checkbox" id="a" name="answer" value="a">
+                        <input type="radio" class="radio" id="a" name="foo[{{ forloop.counter }}][]|{{ forloop.counter }}" value="A">
                         <label for="a">A. {{ question.answer_a }}</label><br>
-                        <input type="checkbox" id="b" name="answer" value="b">
+                        <input type="radio" class="radio" id="b" name="foo[{{ forloop.counter }}][]|{{ forloop.counter }}" value="B">
                         <label for="b">B. {{ question.answer_b }}</label><br>
-                        <input type="checkbox" id="c" name="answer" value="c">
+                        <input type="radio" class="radio" id="c" name="foo[{{ forloop.counter }}][]|{{ forloop.counter }}" value="C">
                         <label for="c">C. {{ question.answer_c }}</label><br>
-                        <input type="checkbox" id="d" name="answer" value="d">
-                        <label for="d">D. {{ question.answer_d }}</label><br>
+                        <input type="radio" class="radio" id="d" name="foo[{{ forloop.counter }}][]|{{ forloop.counter }}" value="D">
+                        <label for="d">D. {{ question.answer_d }}</label>
                     </div>
+                    <input type="hidden" value="{{ question.correct_answer }} " name="quiz_correct_answer">
                 {% endfor %}
+                {% if result is None %}
+                    <input type="submit" value="SPRAWDŹ" id="submit_btn">
+                {% endif %}
                 </form>
             </main>
+            {% if result %}
+                <h2>Twój wynik: {{ result }}/5</h2>
+            {% endif %}
         </div>
         <footer>
             <p>Wykonał Michał Skreczko</p>
